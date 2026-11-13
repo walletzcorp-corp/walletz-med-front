@@ -1,9 +1,15 @@
-import { Unit, UnitStatus, CreateUnitPayload } from "../models/unit";
+import type {
+  Unit,
+  UnitStatus,
+  CreateUnitPayload,
+  UpdateUnitPayload,
+} from "../models/unit";
 import { toApiError } from "./ApiError";
+import { API_URL } from "./api";
 
-const url = "http://localhost:3001";
+const url = API_URL;
 
-interface UnitDto{
+interface UnitDto {
   id: string;
   organizationId: string;
   code: string;
@@ -32,22 +38,25 @@ const fromDto = (d: UnitDto): Unit => ({
   rowVersion: d.rowVersion,
 });
 
-//front -> API
+// front -> API
 const toDto = (p: CreateUnitPayload) => ({
   name: p.unitName.trim(),
-  country: "BR", 
+  country: "BR",
   address: p.unitAddress.trim(),
   municipality: p.unitMunicipality.trim(),
   uf: p.unitUF.trim().toUpperCase(),
   timezone: p.unitTimezone,
 });
 
+const unitsUrl = (organizationId: string) =>
+  `${url}/Unit/${organizationId}/units`;
+
 export const UnitService = {
-    getByOrganizationId: async (organizationId: string): Promise<Unit[]> => {
-    const response = await fetch(`${url}/Unit/${organizationId}/units`);
+  getByOrganizationId: async (organizationId: string): Promise<Unit[]> => {
+    const response = await fetch(unitsUrl(organizationId));
 
     if (!response.ok) {
-      throw new Error("Falha ao buscar unidades");
+      throw await toApiError(response, "Falha ao buscar unidades");
     }
 
     const dtos: UnitDto[] = await response.json();
@@ -57,31 +66,65 @@ export const UnitService = {
   create: async (
     organizationId: string,
     payload: CreateUnitPayload,
-): Promise<Unit> => {
-    const response = await fetch(`${url}/Unit/${organizationId}/units`, {
+  ): Promise<Unit> => {
+    const response = await fetch(unitsUrl(organizationId), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(toDto(payload)),
     });
 
     if (!response.ok) {
-      throw new Error("Falha ao criar unidade");
+      throw await toApiError(response, "Falha ao criar unidade");
     }
 
-    return response.json();
+    return fromDto(await response.json());
   },
 
-  activate: async (organizationId: string, unitId: string): Promise<void> =>{
-    const response = await fetch(
-        `${url}/Unit/${organizationId}/units/${unitId}/activate`,
-        {method: "PATCH"},
-    );
-    if(!response.ok){
-        throw await toApiError(response, "Falha ao ativar unidade");
+  // PUT /Unit/:organizationId/units/:id (exige rowVersion)
+  update: async (
+    organizationId: string,
+    unitId: string,
+    payload: UpdateUnitPayload,
+  ): Promise<Unit> => {
+    const response = await fetch(`${unitsUrl(organizationId)}/${unitId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...toDto(payload), rowVersion: payload.rowVersion }),
+    });
+
+    if (!response.ok) {
+      throw await toApiError(response, "Falha ao atualizar unidade");
     }
-  }
+
+    return fromDto(await response.json());
+  },
+
+  activate: async (organizationId: string, unitId: string): Promise<void> => {
+    const response = await fetch(
+      `${unitsUrl(organizationId)}/${unitId}/activate`,
+      { method: "PATCH" },
+    );
+    if (!response.ok) {
+      throw await toApiError(response, "Falha ao ativar unidade");
+    }
+  },
+
+  // A API não possui DELETE de unidade: a "remoção" é feita via bloqueio.
+  block: async (
+    organizationId: string,
+    unitId: string,
+    reason: string,
+  ): Promise<void> => {
+    const response = await fetch(
+      `${unitsUrl(organizationId)}/${unitId}/block`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      },
+    );
+    if (!response.ok) {
+      throw await toApiError(response, "Falha ao bloquear unidade");
+    }
+  },
 };
-
-

@@ -19,3 +19,6 @@ export type CreateUnitPayload = Omit<
   Unit,
   "id" | "organizationId" | "unitCode" | "unitCountry" | "status" | "rowVersion"
 >;
+
+// Edição: mesmos campos do cadastro + rowVersion (controle de concorrência).
+export type UpdateUnitPayload = CreateUnitPayload & { rowVersion: number };

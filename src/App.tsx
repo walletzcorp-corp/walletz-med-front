@@ -1,33 +1,59 @@
 //componente pai/principal
 
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
-import HeaderSite from "./components/header/Header";
-import Sidebar from "./components/sidebar/Sidebar";
-import OrganizationPage from "./pages/OrganizationRegisterPage";
-import OrganizationListPage from "./pages/OrganizationListPage";
+import CssBaseline from '@mui/material/CssBaseline';
+import { createHashRouter, RouterProvider } from 'react-router';
+import AppTheme from './theme/AppTheme';
+import { dataGridCustomizations, datePickersCustomizations, formInputCustomizations, sidebarCustomizations } from "./theme/customizations";
+import NotificationsProvider from "./hooks/useNotifications/NotificationsProvider";
+import DialogsProvider from "./hooks/useDialogs/DialogsProvider";
+import DashboardLayout from "./components/DashboardLayout";
+import OrganizationGrid from "./components/organization/OrganizationGrid";
+import OrganizationEdit from "./components/organization/OrganizationEdit";
+import OrganizationCreate from "./components/organization/OrganizationCreate";
 
-function App() {
+const router = createHashRouter([
+  {
+    Component: DashboardLayout,
+    children: [
+      {
+        path: '/organizations',
+        Component: OrganizationGrid,
+      },
+      {
+        path: '/organizations/new',
+        Component: OrganizationCreate,
+      },
+      {
+        path: '/organizations/:tenantId/edit',
+        Component: OrganizationEdit,
+      },
+      // Fallback: qualquer rota cai na lista de organizações
+      {
+        path: '*',
+        Component: OrganizationGrid,
+      },
+    ],
+  },
+]);
+
+
+const themeComponents = {
+  ...dataGridCustomizations,
+  ...datePickersCustomizations,
+  ...sidebarCustomizations,
+  ...formInputCustomizations,
+};
+
+export default function CrudDashboard(props: { disableCustomTheme?: boolean }) {
   return (
-    <BrowserRouter>
-      <HeaderSite />
-
-      {/* sidebar + conteúdo */}
-      <div className="app-body">
-        <Sidebar />
-
-        {/* Conteúdo da página */}
-        <div className="app-content">
-          <Routes>
-            <Route path="/" element={<Navigate to="/organizacoes" replace />} />
-            <Route path="/organizacoes" element={<OrganizationListPage />} />
-            <Route path="/organizacao" element={<OrganizationPage />} />
-            <Route path="*" element={<Navigate to="/organizacoes" replace />} />
-          </Routes>
-        </div>
-      </div>
-    </BrowserRouter>
+    <AppTheme {...props} themeComponents={themeComponents}>
+      <CssBaseline enableColorScheme />
+      <NotificationsProvider>
+        <DialogsProvider>
+          <RouterProvider router={router} />
+        </DialogsProvider>
+      </NotificationsProvider>
+    </AppTheme>
   );
 }
-
-export default App;

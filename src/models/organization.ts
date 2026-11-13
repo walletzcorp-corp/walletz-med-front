@@ -22,3 +22,20 @@ export type CreateOrganizationPayload = Omit<
   Organization,
   "id" | "tenantId" | "status" | "rowVersion"
 >;
+
+// PATCH /tenants/:tenantId/organization
+export type UpdateOrganizationPayload = CreateOrganizationPayload & {
+  rowVersion: number;
+};
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  meta: PaginationMeta;
+}

@@ -29,3 +29,11 @@ export async function toApiError(response: Response, fallback: string) {
   return new ApiError(fallback, response.status, details);
 }
 
+
+// Mensagem amigável para exibir na tela (inclui os detalhes devolvidos pela API).
+export function apiErrorMessage(error: unknown): string {
+  if (error instanceof ApiError && error.details.length > 0) {
+    return `${error.message}: ${error.details.join(", ")}`;
+  }
+  return error instanceof Error ? error.message : String(error);
+}

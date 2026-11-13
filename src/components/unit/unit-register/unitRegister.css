@@ -164,3 +164,29 @@
     padding: 32px 22px 26px;
   }
 }
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #f5c6cb;
+}
+
+.unit-register .btn-cancel {
+  padding: 11px 20px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--navy);
+  background: transparent;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.unit-register button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

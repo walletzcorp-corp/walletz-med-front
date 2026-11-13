@@ -31,3 +31,27 @@
   transform: translateY(-1px);
   box-shadow: 0 12px 22px rgba(21, 45, 255, 0.34);
 }
+
+.organization-list .btn-expand {
+  width: 28px;
+  height: 28px;
+  font-size: 1rem;
+  color: var(--cobalt);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.organization-list .btn-expand:hover {
+  background: rgba(21, 45, 255, 0.08);
+}
+
+.organization-list .row-open {
+  background: #f2f6fa;
+}
+
+.organization-list .row-detail > td {
+  padding: 16px 24px;
+  background: #f8fafc;
+}

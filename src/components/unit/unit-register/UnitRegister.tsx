@@ -1,8 +1,16 @@
-import { useState } from "react";
+import { use, useState } from "react";
 import { CreateUnitPayload } from "../../../models/unit";
 import "./unitRegister.css";
+import { UnitService } from "../../../services/UnitService";
+import { ApiError } from "../../../services/ApiError";
 
-export function UnitRegister() {
+interface Props{
+  organizationId: string;
+  onSaved: () => void;
+  onCancel: () => void
+}
+
+export function UnitRegister({organizationId, onSaved, onCancel}: Props) {
   const [unitName, setUnitName] = useState("");
   const [unitCountry, setUnitCountry] = useState("");
   const [unitAddress, setUnitAddress] = useState("");
@@ -10,12 +18,17 @@ export function UnitRegister() {
   const [unitUF, setUnitUF] = useState("");
   const [unitTimezone, setUnitTimezone] = useState("");
 
-  const [mensagemSucesso, setMensagemSucesso] = useState(false);
+  const [erros, setErros] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    
+    event.preventDefault();
+    setSaving(true);
+    setErros([]);
+    
     const payload: CreateUnitPayload = {
       unitName: unitName,
-      unitCountry: unitCountry,
       unitAddress: unitAddress,
       unitMunicipality: unitMunicipality,
       unitUF: unitUF,
@@ -23,24 +36,29 @@ export function UnitRegister() {
     };
 
     try {
-      setUnitName("");
-      setUnitCountry("");
-      setUnitAddress("");
-      setUnitMunicipality("");
-      setUnitUF("");
-      setUnitTimezone("");
+      await UnitService.create(organizationId, payload);
+      onSaved(); // o painel fecha o formulário e recarrega a lista
     } catch (error) {
-      console.error("Erro ao registrar unidade:", error);
-      setMensagemSucesso(false);
+      if (error instanceof ApiError && error.details.length > 0) {
+        setErros(error.details);
+      } else {
+        setErros(["Não foi possível cadastrar a unidade."]);
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
     <div className="unit-register">
-      <h2>Cadastrar Unidade</h2>
+      <h2>Nova unidade</h2>
 
-      {mensagemSucesso && (
-        <div className="success-message">Unidade registrada com sucesso!</div>
+      {erros.length > 0 && (
+        <div className="error-message">
+          {erros.map((erro) => (
+            <div key={erro}>{erro}</div>
+          ))}
+        </div>
       )}
 
       <form onSubmit={handleSubmit}>
@@ -127,7 +145,12 @@ export function UnitRegister() {
           </select>
         </div>
 
-        <button type="submit">Cadastrar Unidade</button>
+        <button type="submit" disabled={saving}>
+          {saving ? "Salvando..." : "Cadastrar Unidade"}
+        </button>
+        <button type="button" className="btn-cancel" onClick={onCancel}>
+          Cancelar
+        </button>
       </form>
     </div>
   );

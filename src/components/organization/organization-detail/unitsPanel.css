@@ -1,0 +1,58 @@
+.units-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.units-panel-header h3 {
+  margin: 0;
+}
+
+.units-panel .btn-primary {
+  padding: 9px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--cobalt, #152dff);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.units-panel .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.units-panel .btn-activate {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--cobalt, #152dff);
+  background: transparent;
+  border: 1.5px solid var(--cobalt, #152dff);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.units-panel .btn-activate:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* o formulário reaproveitado deixa de ser um cartão centralizado */
+.units-panel .unit-register {
+  margin: 0 0 20px;
+  max-width: 460px;
+}
+
+.pendencies {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.pendencies ul {
+  margin: 4px 0 0 20px;
+}

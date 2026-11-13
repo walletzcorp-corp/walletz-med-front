@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import "./OrganizationList.css";
 import type { Organization } from "../../../models/organization";
 import { OrganizationService } from "../../../services/OrganizationService";
 import { Link } from "react-router-dom";
+import OrganizationDetail from "../organization-detail/OrganizationDetail";
 
 const taxProfileLabels: Record<string, string> = {
   SIMPLES_NACIONAL: "Simples Nacional",
@@ -19,6 +20,13 @@ function OrganizationList() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // id da organização com o painel aberto (null = nenhuma)
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const toggle = (id: string) =>
+    setExpandedId((current) => (current === id ? null : id));
+
 
   useEffect(() => {
     OrganizationService.getOrganizations()
@@ -46,6 +54,7 @@ function OrganizationList() {
           <table>
             <thead>
               <tr>
+                <th></th>
                 <th>Razão social</th>
                 <th>Nome fantasia</th>
                 <th>CNPJ</th>
@@ -53,21 +62,47 @@ function OrganizationList() {
               </tr>
             </thead>
             <tbody>
-              {organizations.map((organization) => (
-                <tr key={organization.id}>
-                  <td className="cell-main">{organization.legalName}</td>
-                  <td>{organization.tradeName}</td>
-                  <td className="cell-cnpj">
-                    {formatCnpj(organization.cnpjDigits)}
-                  </td>
-                  <td>
-                    <span className="badge">
-                      {taxProfileLabels[organization.taxProfile] ??
-                        organization.taxProfile}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {organizations.map((organization) => {
+                const isOpen = expandedId === organization.id;
+
+                return (
+                  <Fragment key={organization.id}>
+                    <tr className={isOpen ? "row-open" : ""}>
+                      <td>
+                        <button
+                          className="btn-expand"
+                          aria-expanded={isOpen}
+                          aria-label={
+                            isOpen ? "Recolher unidades" : "Ver unidades"
+                          }
+                          onClick={() => toggle(organization.id)}
+                        >
+                          {isOpen ? "▾" : "▸"}
+                        </button>
+                      </td>
+                      <td className="cell-main">{organization.legalName}</td>
+                      <td>{organization.tradeName}</td>
+                      <td className="cell-cnpj">
+                        {formatCnpj(organization.cnpjDigits)}
+                      </td>
+                      <td>
+                        <span className="badge">
+                          {taxProfileLabels[organization.taxProfile] ??
+                            organization.taxProfile}
+                        </span>
+                      </td>
+                    </tr>
+
+                    {isOpen && (
+                      <tr className="row-detail">
+                        <td colSpan={5}>
+                          <OrganizationDetail organization={organization} />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>

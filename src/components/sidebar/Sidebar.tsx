@@ -22,14 +22,7 @@ function Sidebar() {
         >
           Cadastrar Organização
         </NavLink>
-        <NavLink
-          to="/unidade"
-          className={({ isActive }) =>
-            `sidebar-link ${isActive ? "active" : ""}`
-          }
-        >
-          Unidade
-        </NavLink>
+        
       </nav>
     </aside>
   );

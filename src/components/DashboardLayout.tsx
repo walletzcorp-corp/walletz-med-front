@@ -1,12 +1,12 @@
-import * as React from 'react';
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import { Outlet } from 'react-router';
-import DashboardHeader from './header/DashboardHeader';
-import DashboardSidebar from './sidebar/DashboardSidebar';
-import SitemarkIcon from './SitemarkIcon';
+import * as React from "react";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import { Outlet } from "react-router";
+import DashboardHeader from "./header/DashboardHeader";
+import DashboardSidebar from "./sidebar/DashboardSidebar";
+import WalletzmedIcon from "./WalletzmedIcon";
 
 export default function DashboardLayout() {
   const theme = useTheme();
@@ -16,7 +16,7 @@ export default function DashboardLayout() {
   const [isMobileNavigationExpanded, setIsMobileNavigationExpanded] =
     React.useState(false);
 
-  const isOverMdViewport = useMediaQuery(theme.breakpoints.up('md'));
+  const isOverMdViewport = useMediaQuery(theme.breakpoints.up("md"));
 
   const isNavigationExpanded = isOverMdViewport
     ? isDesktopNavigationExpanded
@@ -44,46 +44,46 @@ export default function DashboardLayout() {
     [setIsNavigationExpanded],
   );
 
-  const layoutRef = React.useRef<HTMLDivElement>(null);
+  const [layoutEl, setLayoutEl] = React.useState<HTMLDivElement | null>(null);
 
   return (
     <Box
-      ref={layoutRef}
+      ref={setLayoutEl}
       sx={{
-        position: 'relative',
-        display: 'flex',
-        overflow: 'hidden',
-        height: '100%',
-        width: '100%',
+        position: "relative",
+        display: "flex",
+        overflow: "hidden",
+        height: "100%",
+        width: "100%",
       }}
     >
       <DashboardHeader
-        logo={<SitemarkIcon />}
-        title=""
+        logo={<WalletzmedIcon />}
+        title="Walletz Med"
         menuOpen={isNavigationExpanded}
         onToggleMenu={handleToggleHeaderMenu}
       />
       <DashboardSidebar
         expanded={isNavigationExpanded}
         setExpanded={setIsNavigationExpanded}
-        container={layoutRef?.current ?? undefined}
+        container={layoutEl ?? undefined}
       />
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: 'column',
+          display: "flex",
+          flexDirection: "column",
           flex: 1,
           minWidth: 0,
         }}
       >
-        <Toolbar sx={{ displayPrint: 'none' }} />
+        <Toolbar sx={{ displayPrint: "none" }} />
         <Box
           component="main"
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
+            display: "flex",
+            flexDirection: "column",
             flex: 1,
-            overflow: 'auto',
+            overflow: "auto",
           }}
         >
           <Outlet />

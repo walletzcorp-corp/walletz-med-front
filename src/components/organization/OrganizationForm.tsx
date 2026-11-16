@@ -1,22 +1,23 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
-import Grid from '@mui/material/Grid';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { type SelectChangeEvent } from '@mui/material/Select';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useNavigate } from 'react-router';
-import type { RegionalConfiguration } from '../../models/regionalConfiguration';
+import * as React from "react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import FormControl from "@mui/material/FormControl";
+import FormHelperText from "@mui/material/FormHelperText";
+import Grid from "@mui/material/Grid";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useNavigate } from "react-router";
+import type { RegionalConfiguration } from "../../models/regionalConfiguration";
 import {
+  ORG_STATUS_OPTIONS,
   TAX_PROFILE_OPTIONS,
   type OrganizationFormErrors,
   type OrganizationFormValues,
-} from './organizationFormUtils';
+} from "./organizationFormUtils";
 
 export interface OrganizationFormProps {
   values: OrganizationFormValues;
@@ -28,6 +29,7 @@ export interface OrganizationFormProps {
   submitButtonLabel: string;
   isSubmitting: boolean;
   backButtonPath?: string;
+  showStatus?: boolean;
 }
 
 export default function OrganizationForm({
@@ -39,7 +41,8 @@ export default function OrganizationForm({
   onReset,
   submitButtonLabel,
   isSubmitting,
-  backButtonPath = '/organizations',
+  backButtonPath = "/organizations",
+  showStatus = false,
 }: OrganizationFormProps) {
   const navigate = useNavigate();
 
@@ -52,7 +55,7 @@ export default function OrganizationForm({
     (field: keyof OrganizationFormValues) =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
       let value = event.target.value;
-      if (field === 'cnpjDigits') value = value.replace(/\D/g, '').slice(0, 14);
+      if (field === "cnpjDigits") value = value.replace(/\D/g, "").slice(0, 14);
       onFieldChange(field, value);
     };
 
@@ -63,47 +66,49 @@ export default function OrganizationForm({
 
   return (
     <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off">
-      <Grid container spacing={2} sx={{ mb: 2, width: '100%' }}>
-        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
+      <Grid container spacing={2} sx={{ mb: 2, width: "100%" }}>
+        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: "flex" }}>
           <TextField
             value={values.legalName}
-            onChange={handleTextChange('legalName')}
+            onChange={handleTextChange("legalName")}
             name="legalName"
             label="Razão social"
             error={!!errors.legalName}
-            helperText={errors.legalName ?? ' '}
+            helperText={errors.legalName ?? " "}
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
+        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: "flex" }}>
           <TextField
             value={values.tradeName}
-            onChange={handleTextChange('tradeName')}
+            onChange={handleTextChange("tradeName")}
             name="tradeName"
             label="Nome fantasia"
             error={!!errors.tradeName}
-            helperText={errors.tradeName ?? ' '}
+            helperText={errors.tradeName ?? " "}
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
+        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: "flex" }}>
           <TextField
             value={values.cnpjDigits}
-            onChange={handleTextChange('cnpjDigits')}
+            onChange={handleTextChange("cnpjDigits")}
             name="cnpjDigits"
             label="CNPJ (somente números)"
             error={!!errors.cnpjDigits}
-            helperText={errors.cnpjDigits ?? ' '}
-            slotProps={{ htmlInput: { inputMode: 'numeric', maxLength: 14 } }}
+            helperText={errors.cnpjDigits ?? " "}
+            slotProps={{ htmlInput: { inputMode: "numeric", maxLength: 14 } }}
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
+        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: "flex" }}>
           <FormControl error={!!errors.taxProfile} fullWidth>
-            <InputLabel id="org-tax-profile-label">Perfil tributário</InputLabel>
+            <InputLabel id="org-tax-profile-label">
+              Perfil tributário
+            </InputLabel>
             <Select
               value={values.taxProfile}
-              onChange={handleSelectChange('taxProfile')}
+              onChange={handleSelectChange("taxProfile")}
               labelId="org-tax-profile-label"
               name="taxProfile"
               label="Perfil tributário"
@@ -115,15 +120,17 @@ export default function OrganizationForm({
                 </MenuItem>
               ))}
             </Select>
-            <FormHelperText>{errors.taxProfile ?? ' '}</FormHelperText>
+            <FormHelperText>{errors.taxProfile ?? " "}</FormHelperText>
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
+        <Grid size={{ xs: 12, sm: 6 }} sx={{ display: "flex" }}>
           <FormControl error={!!errors.regionalConfigId} fullWidth>
-            <InputLabel id="org-regional-config-label">Configuração regional</InputLabel>
+            <InputLabel id="org-regional-config-label">
+              Configuração regional
+            </InputLabel>
             <Select
               value={values.regionalConfigId}
-              onChange={handleSelectChange('regionalConfigId')}
+              onChange={handleSelectChange("regionalConfigId")}
               labelId="org-regional-config-label"
               name="regionalConfigId"
               label="Configuração regional"
@@ -135,11 +142,37 @@ export default function OrganizationForm({
                 </MenuItem>
               ))}
             </Select>
-            <FormHelperText>{errors.regionalConfigId ?? ' '}</FormHelperText>
+            <FormHelperText>{errors.regionalConfigId ?? " "}</FormHelperText>
           </FormControl>
         </Grid>
+        {showStatus && (
+          <Grid size={{ xs: 12, sm: 6 }} sx={{ display: "flex" }}>
+            <FormControl fullWidth>
+              <InputLabel id="org-status-label">Status</InputLabel>
+              <Select
+                value={values.status ?? "ACTIVE"}
+                onChange={handleSelectChange("status")}
+                labelId="org-status-label"
+                name="status"
+                label="Status"
+                fullWidth
+              >
+                {ORG_STATUS_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText> </FormHelperText>
+            </FormControl>
+          </Grid>
+        )}
       </Grid>
-      <Stack direction="row" spacing={2} sx={{ justifyContent: 'space-between' }}>
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{ justifyContent: "space-between" }}
+      >
         <Button
           variant="contained"
           startIcon={<ArrowBackIcon />}
@@ -149,11 +182,20 @@ export default function OrganizationForm({
         </Button>
         <Stack direction="row" spacing={2}>
           {onReset && (
-            <Button variant="outlined" onClick={onReset} disabled={isSubmitting}>
+            <Button
+              variant="outlined"
+              onClick={onReset}
+              disabled={isSubmitting}
+            >
               Desfazer
             </Button>
           )}
-          <Button type="submit" variant="contained" size="large" loading={isSubmitting}>
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            loading={isSubmitting}
+          >
             {submitButtonLabel}
           </Button>
         </Stack>

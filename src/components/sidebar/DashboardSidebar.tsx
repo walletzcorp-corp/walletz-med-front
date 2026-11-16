@@ -1,22 +1,18 @@
-import * as React from 'react';
-import { useTheme, type Theme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import Toolbar from '@mui/material/Toolbar';
-import type {} from '@mui/material/themeCssVarsAugmentation';
-import PersonIcon from '@mui/icons-material/Person';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import DescriptionIcon from '@mui/icons-material/Description';
-import LayersIcon from '@mui/icons-material/Layers';
-import { matchPath, useLocation } from 'react-router';
-import DashboardSidebarContext from '../../context/DashboardSidebarContext';
-import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from '../../constants';
-import DashboardSidebarPageItem from './DashboardSidebarPageItem';
-import DashboardSidebarHeaderItem from './DashboardSidebarHeaderItem';
-import DashboardSidebarDividerItem from './DashboardSidebarDividerItem';
-import getDrawerSxTransitionMixin from '../../mixins';
+import * as React from "react";
+import { useTheme, type Theme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Box from "@mui/material/Box";
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import Toolbar from "@mui/material/Toolbar";
+import type {} from "@mui/material/themeCssVarsAugmentation";
+import PersonIcon from "@mui/icons-material/Person";
+import { matchPath, useLocation } from "react-router";
+import DashboardSidebarContext from "../../context/DashboardSidebarContext";
+import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from "../../constants";
+import DashboardSidebarPageItem from "./DashboardSidebarPageItem";
+import DashboardSidebarHeaderItem from "./DashboardSidebarHeaderItem";
+import getDrawerSxTransitionMixin from "../../mixins";
 
 export interface DashboardSidebarProps {
   expanded?: boolean;
@@ -37,12 +33,14 @@ export default function DashboardSidebar({
 
   const [expandedItemIds, setExpandedItemIds] = React.useState<string[]>([]);
 
-  const isOverSmViewport = useMediaQuery(theme.breakpoints.up('sm'));
-  const isOverMdViewport = useMediaQuery(theme.breakpoints.up('md'));
-  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const isOverSmViewport = useMediaQuery(theme.breakpoints.up("sm"));
+  const isOverMdViewport = useMediaQuery(theme.breakpoints.up("md"));
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
   const shouldReduceDrawerMotion =
-    theme.motion.reducedMotion === 'always' ||
-    (theme.motion.reducedMotion === 'system' && prefersReducedMotion);
+    theme.motion.reducedMotion === "always" ||
+    (theme.motion.reducedMotion === "system" && prefersReducedMotion);
   const drawerEnteringDuration = shouldReduceDrawerMotion
     ? 0
     : theme.transitions.duration.enteringScreen;
@@ -56,6 +54,7 @@ export default function DashboardSidebar({
   React.useEffect(() => {
     if (expanded) {
       if (drawerEnteringDuration === 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsFullyExpanded(true);
         return undefined;
       }
@@ -75,6 +74,7 @@ export default function DashboardSidebar({
   React.useEffect(() => {
     if (!expanded) {
       if (drawerLeavingDuration === 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsFullyCollapsed(true);
         return undefined;
       }
@@ -121,7 +121,7 @@ export default function DashboardSidebar({
     isOverSmViewport && (!disableCollapsibleSidebar || isOverMdViewport);
 
   const getDrawerContent = React.useCallback(
-    (viewport: 'phone' | 'tablet' | 'desktop') => (
+    (viewport: "phone" | "tablet" | "desktop") => (
       <React.Fragment>
         <Toolbar />
         <Box
@@ -129,17 +129,17 @@ export default function DashboardSidebar({
           aria-label={`${viewport.charAt(0).toUpperCase()}${viewport.slice(1)}`}
           sx={[
             {
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              overflow: 'auto',
-              scrollbarGutter: mini ? 'stable' : 'auto',
-              overflowX: 'hidden',
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              overflow: "auto",
+              scrollbarGutter: mini ? "stable" : "auto",
+              overflowX: "hidden",
               pt: !mini ? 0 : 2,
             },
             hasDrawerTransitions
-              ? getDrawerSxTransitionMixin(isFullyExpanded, 'padding')
+              ? getDrawerSxTransitionMixin(isFullyExpanded, "padding")
               : null,
           ]}
         >
@@ -148,7 +148,7 @@ export default function DashboardSidebar({
             sx={{
               padding: mini ? 0 : 0.5,
               mb: 4,
-              width: mini ? MINI_DRAWER_WIDTH : 'auto',
+              width: mini ? MINI_DRAWER_WIDTH : "auto",
             }}
           >
             <DashboardSidebarHeaderItem>Main items</DashboardSidebarHeaderItem>
@@ -157,51 +157,9 @@ export default function DashboardSidebar({
               title="Organização"
               icon={<PersonIcon />}
               href="/organizations"
-              selected={!!matchPath('/organizations/*', pathname) || pathname === '/'}
-            />
-            <DashboardSidebarDividerItem />
-            <DashboardSidebarHeaderItem>Example items</DashboardSidebarHeaderItem>
-            <DashboardSidebarPageItem
-              id="reports"
-              title="Reports"
-              icon={<BarChartIcon />}
-              href="/reports"
-              selected={!!matchPath('/reports', pathname)}
-              defaultExpanded={!!matchPath('/reports', pathname)}
-              expanded={expandedItemIds.includes('reports')}
-              nestedNavigation={
-                <List
-                  dense
-                  sx={{
-                    padding: 0,
-                    my: 1,
-                    pl: mini ? 0 : 1,
-                    minWidth: 240,
-                  }}
-                >
-                  <DashboardSidebarPageItem
-                    id="sales"
-                    title="Sales"
-                    icon={<DescriptionIcon />}
-                    href="/reports/sales"
-                    selected={!!matchPath('/reports/sales', pathname)}
-                  />
-                  <DashboardSidebarPageItem
-                    id="traffic"
-                    title="Traffic"
-                    icon={<DescriptionIcon />}
-                    href="/reports/traffic"
-                    selected={!!matchPath('/reports/traffic', pathname)}
-                  />
-                </List>
+              selected={
+                !!matchPath("/organizations/*", pathname) || pathname === "/"
               }
-            />
-            <DashboardSidebarPageItem
-              id="integrations"
-              title="Integrations"
-              icon={<LayersIcon />}
-              href="/integrations"
-              selected={!!matchPath('/integrations', pathname)}
             />
           </List>
         </Box>
@@ -215,23 +173,23 @@ export default function DashboardSidebar({
       const drawerWidth = mini ? MINI_DRAWER_WIDTH : DRAWER_WIDTH;
       const widthTransitionStyles = getDrawerSxTransitionMixin(
         expanded,
-        'width',
+        "width",
       )(drawerTheme);
 
       return {
-        displayPrint: 'none',
+        displayPrint: "none",
         width: drawerWidth,
         flexShrink: 0,
         ...widthTransitionStyles,
-        overflowX: 'hidden',
-        ...(isTemporary ? { position: 'absolute' } : {}),
+        overflowX: "hidden",
+        ...(isTemporary ? { position: "absolute" } : {}),
         [`& .MuiDrawer-paper`]: {
-          position: 'absolute',
+          position: "absolute",
           width: drawerWidth,
-          boxSizing: 'border-box',
-          backgroundImage: 'none',
+          boxSizing: "border-box",
+          backgroundImage: "none",
           ...widthTransitionStyles,
-          overflowX: 'hidden',
+          overflowX: "hidden",
         },
       };
     },
@@ -267,36 +225,39 @@ export default function DashboardSidebar({
         sx={[
           {
             display: {
-              xs: 'block',
-              sm: disableCollapsibleSidebar ? 'block' : 'none',
-              md: 'none',
+              xs: "block",
+              sm: disableCollapsibleSidebar ? "block" : "none",
+              md: "none",
             },
           },
           getDrawerSharedSx(true),
         ]}
       >
-        {getDrawerContent('phone')}
+        {getDrawerContent("phone")}
       </Drawer>
       <Drawer
         variant="permanent"
         sx={[
           {
             display: {
-              xs: 'none',
-              sm: disableCollapsibleSidebar ? 'none' : 'block',
-              md: 'none',
+              xs: "none",
+              sm: disableCollapsibleSidebar ? "none" : "block",
+              md: "none",
             },
           },
           getDrawerSharedSx(false),
         ]}
       >
-        {getDrawerContent('tablet')}
+        {getDrawerContent("tablet")}
       </Drawer>
       <Drawer
         variant="permanent"
-        sx={[{ display: { xs: 'none', md: 'block' } }, getDrawerSharedSx(false)]}
+        sx={[
+          { display: { xs: "none", md: "block" } },
+          getDrawerSharedSx(false),
+        ]}
       >
-        {getDrawerContent('desktop')}
+        {getDrawerContent("desktop")}
       </Drawer>
     </DashboardSidebarContext.Provider>
   );

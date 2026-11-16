@@ -26,6 +26,7 @@ export default function OrganizationCreate() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   React.useEffect(() => {
+    
     OrganizationService.getRegionalConfiguration()
       .then(setRegionalConfigs)
       .catch((error) => setLoadError(apiErrorMessage(error)));

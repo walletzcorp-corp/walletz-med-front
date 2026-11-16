@@ -1,52 +1,56 @@
-import * as React from 'react';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
-import Grid from '@mui/material/Grid';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { type SelectChangeEvent } from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
-import type { Unit, CreateUnitPayload } from '../../models/unit';
-import { UnitService } from '../../services/UnitService';
-import { ApiError } from '../../services/ApiError';
-import { getTimezoneByCountry } from '../../utils/timezoneUtils';
+import * as React from "react";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import FormControl from "@mui/material/FormControl";
+import FormHelperText from "@mui/material/FormHelperText";
+import Grid from "@mui/material/Grid";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
+import TextField from "@mui/material/TextField";
+import type { Unit, CreateUnitPayload } from "../../models/unit";
+import { UnitService } from "../../services/UnitService";
+import { ApiError } from "../../services/ApiError";
+import { getTimezoneByCountry } from "../../utils/timezoneUtils";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
 
-const BR_TIMEZONES = getTimezoneByCountry('BR');
+const BR_TIMEZONES = getTimezoneByCountry("BR");
 
 type FormValues = CreateUnitPayload;
 type FormErrors = Partial<Record<keyof FormValues, string>>;
 
 const EMPTY_FORM: FormValues = {
-  unitName: '',
-  unitAddress: '',
-  unitMunicipality: '',
-  unitUF: '',
-  unitTimezone: 'America/Sao_Paulo',
+  unitName: "",
+  unitAddress: "",
+  unitMunicipality: "",
+  unitUF: "",
+  unitTimezone: "America/Sao_Paulo",
 };
 
 function validate(values: FormValues): FormErrors {
   const errors: FormErrors = {};
-  if (!values.unitName.trim()) errors.unitName = 'Nome é obrigatório';
-  if (!values.unitAddress.trim()) errors.unitAddress = 'Endereço é obrigatório';
-  if (!values.unitMunicipality.trim()) errors.unitMunicipality = 'Município é obrigatório';
-  if (!/^[A-Za-z]{2}$/.test(values.unitUF.trim())) errors.unitUF = 'UF deve ter 2 letras';
-  if (!values.unitTimezone) errors.unitTimezone = 'Fuso horário é obrigatório';
+  if (!values.unitName.trim()) errors.unitName = "Nome é obrigatório";
+  if (!values.unitAddress.trim()) errors.unitAddress = "Endereço é obrigatório";
+  if (!values.unitMunicipality.trim())
+    errors.unitMunicipality = "Município é obrigatório";
+  if (!/^[A-Za-z]{2}$/.test(values.unitUF.trim()))
+    errors.unitUF = "UF deve ter 2 letras";
+  if (!values.unitTimezone) errors.unitTimezone = "Fuso horário é obrigatório";
   return errors;
 }
 
 function toFormValues(unit: Unit): FormValues {
   return {
-    unitName: unit.unitName ?? '',
-    unitAddress: unit.unitAddress ?? '',
-    unitMunicipality: unit.unitMunicipality ?? '',
-    unitUF: unit.unitUF ?? '',
-    unitTimezone: unit.unitTimezone ?? '',
+    unitName: unit.unitName ?? "",
+    unitAddress: unit.unitAddress ?? "",
+    unitMunicipality: unit.unitMunicipality ?? "",
+    unitUF: unit.unitUF ?? "",
+    unitTimezone: unit.unitTimezone ?? "",
   };
 }
 
@@ -56,14 +60,20 @@ interface Props {
   /** Unidade a editar. `null` = modo de inclusão. */
   unit: Unit | null;
   onClose: () => void;
-  onSaved: (mode: 'create' | 'edit') => void;
+  onSaved: (mode: "create" | "edit") => void;
 }
 
 /**
  * Modal de inclusão/edição de unidade.
  * O componente pai deve trocar a `key` a cada abertura para reiniciar o formulário.
  */
-export default function UnitEditDialog({ open, organizationId, unit, onClose, onSaved }: Props) {
+export default function UnitEditDialog({
+  open,
+  organizationId,
+  unit,
+  onClose,
+  onSaved,
+}: Props) {
   const isEdit = !!unit;
 
   const [values, setValues] = React.useState<FormValues>(
@@ -72,11 +82,18 @@ export default function UnitEditDialog({ open, organizationId, unit, onClose, on
   const [errors, setErrors] = React.useState<FormErrors>({});
   const [submitError, setSubmitError] = React.useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [activateOnSave, setActivateOnSave] = React.useState(false);
+  const canActivate =
+    isEdit &&
+    (unit?.status === "RASCUNHO" ||
+      unit?.status === "BLOQUEADA" ||
+      unit?.status === "INATIVA");
 
   const handleTextChange =
-    (field: keyof FormValues) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof FormValues) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
       let value = event.target.value;
-      if (field === 'unitUF') value = value.toUpperCase().slice(0, 2);
+      if (field === "unitUF") value = value.toUpperCase().slice(0, 2);
       setValues((prev) => ({ ...prev, [field]: value }));
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     };
@@ -102,10 +119,13 @@ export default function UnitEditDialog({ open, organizationId, unit, onClose, on
           ...values,
           rowVersion: unit.rowVersion,
         });
-        onSaved('edit');
+        if (canActivate && activateOnSave) {
+          await UnitService.activate(organizationId, unit.id);
+        }
+        onSaved("edit");
       } else {
         await UnitService.create(organizationId, values);
-        onSaved('create');
+        onSaved("create");
       }
     } catch (error) {
       setSubmitError(
@@ -119,8 +139,12 @@ export default function UnitEditDialog({ open, organizationId, unit, onClose, on
 
   // Garante que o fuso atual apareça mesmo que não esteja na lista do BR
   const timezoneOptions =
-    values.unitTimezone && !BR_TIMEZONES.some((tz) => tz.name === values.unitTimezone)
-      ? [{ name: values.unitTimezone, label: values.unitTimezone }, ...BR_TIMEZONES]
+    values.unitTimezone &&
+    !BR_TIMEZONES.some((tz) => tz.name === values.unitTimezone)
+      ? [
+          { name: values.unitTimezone, label: values.unitTimezone },
+          ...BR_TIMEZONES,
+        ]
       : BR_TIMEZONES;
 
   return (
@@ -130,13 +154,17 @@ export default function UnitEditDialog({ open, organizationId, unit, onClose, on
       fullWidth
       maxWidth="sm"
       slotProps={{
-        paper: { component: 'form', onSubmit: handleSubmit, noValidate: true } as object,
+        paper: {
+          component: "form",
+          onSubmit: handleSubmit,
+          noValidate: true,
+        } as object,
       }}
     >
       <DialogTitle>
         {isEdit
-          ? `Editar unidade${unit?.unitCode ? ` (${unit.unitCode})` : ''}`
-          : 'Nova unidade'}
+          ? `Editar unidade${unit?.unitCode ? ` (${unit.unitCode})` : ""}`
+          : "Nova unidade"}
       </DialogTitle>
       <DialogContent>
         {submitError.length > 0 && (
@@ -150,10 +178,10 @@ export default function UnitEditDialog({ open, organizationId, unit, onClose, on
           <Grid size={12}>
             <TextField
               value={values.unitName}
-              onChange={handleTextChange('unitName')}
+              onChange={handleTextChange("unitName")}
               label="Nome da unidade"
               error={!!errors.unitName}
-              helperText={errors.unitName ?? ' '}
+              helperText={errors.unitName ?? " "}
               fullWidth
               autoFocus
             />
@@ -161,30 +189,30 @@ export default function UnitEditDialog({ open, organizationId, unit, onClose, on
           <Grid size={12}>
             <TextField
               value={values.unitAddress}
-              onChange={handleTextChange('unitAddress')}
+              onChange={handleTextChange("unitAddress")}
               label="Endereço"
               error={!!errors.unitAddress}
-              helperText={errors.unitAddress ?? ' '}
+              helperText={errors.unitAddress ?? " "}
               fullWidth
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 8 }}>
             <TextField
               value={values.unitMunicipality}
-              onChange={handleTextChange('unitMunicipality')}
+              onChange={handleTextChange("unitMunicipality")}
               label="Município"
               error={!!errors.unitMunicipality}
-              helperText={errors.unitMunicipality ?? ' '}
+              helperText={errors.unitMunicipality ?? " "}
               fullWidth
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
             <TextField
               value={values.unitUF}
-              onChange={handleTextChange('unitUF')}
+              onChange={handleTextChange("unitUF")}
               label="UF"
               error={!!errors.unitUF}
-              helperText={errors.unitUF ?? ' '}
+              helperText={errors.unitUF ?? " "}
               fullWidth
             />
           </Grid>
@@ -204,17 +232,34 @@ export default function UnitEditDialog({ open, organizationId, unit, onClose, on
                   </MenuItem>
                 ))}
               </Select>
-              <FormHelperText>{errors.unitTimezone ?? ' '}</FormHelperText>
+              <FormHelperText>{errors.unitTimezone ?? " "}</FormHelperText>
             </FormControl>
           </Grid>
         </Grid>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
+        {canActivate && (
+          <FormControlLabel
+            sx={{ mr: "auto" }}
+            control={
+              <Checkbox
+                checked={activateOnSave}
+                onChange={(e) => setActivateOnSave(e.target.checked)}
+                disabled={isSubmitting}
+              />
+            }
+            label={
+              unit?.status === "BLOQUEADA"
+                ? "Reativar unidade ao salvar"
+                : "Ativar unidade ao salvar"
+            }
+          />
+        )}
         <Button onClick={onClose} disabled={isSubmitting}>
           Cancelar
         </Button>
         <Button type="submit" variant="contained" loading={isSubmitting}>
-          {isEdit ? 'Salvar' : 'Cadastrar'}
+          {isEdit ? "Salvar" : "Cadastrar"}
         </Button>
       </DialogActions>
     </Dialog>

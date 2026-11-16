@@ -1,51 +1,56 @@
-import * as React from 'react';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
+import * as React from "react";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
+import IconButton from "@mui/material/IconButton";
+import Stack from "@mui/material/Stack";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
 import {
   DataGrid,
   GridActionsCellItem,
   type GridColDef,
   gridClasses,
-} from '@mui/x-data-grid';
-import Button from '@mui/material/Button';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { useDialogs } from '../../hooks/useDialogs/useDialogs';
-import useNotifications from '../../hooks/useNotifications/useNotifications';
-import type { Unit, UnitStatus } from '../../models/unit';
-import { UnitService } from '../../services/UnitService';
-import { ApiError } from '../../services/ApiError';
-import UnitEditDialog from './UnitEditDialog';
+} from "@mui/x-data-grid";
+import Button from "@mui/material/Button";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import BlockIcon from "@mui/icons-material/Block";
+import { useDialogs } from "../../hooks/useDialogs/useDialogs";
+import useNotifications from "../../hooks/useNotifications/useNotifications";
+import type { Unit, UnitStatus } from "../../models/unit";
+import { UnitService } from "../../services/UnitService";
+import { ApiError } from "../../services/ApiError";
+import UnitEditDialog from "./UnitEditDialog";
 
 const STATUS_CONFIG: Record<
   UnitStatus,
-  { label: string; color: 'default' | 'success' | 'warning' | 'error' }
+  { label: string; color: "default" | "success" | "warning" | "error" }
 > = {
-  RASCUNHO: { label: 'Rascunho', color: 'warning' },
-  ATIVA: { label: 'Ativa', color: 'success' },
-  INATIVA: { label: 'Inativa', color: 'default' },
-  BLOQUEADA: { label: 'Bloqueada', color: 'error' },
+  RASCUNHO: { label: "Rascunho", color: "warning" },
+  ATIVA: { label: "Ativa", color: "success" },
+  INATIVA: { label: "Inativa", color: "default" },
+  BLOQUEADA: { label: "Bloqueada", color: "error" },
 };
 
 function errorMessage(error: unknown) {
   if (error instanceof ApiError && error.details.length > 0) {
-    return error.details.join(', ');
+    return error.details.join(", ");
   }
   return (error as Error).message;
 }
 
 interface Props {
   organizationId: string;
+  /** false = organização inativa: não permite cadastrar novas unidades. */
+  canCreateUnit?: boolean;
 }
 
-export default function UnitGrid({ organizationId }: Props) {
+export default function UnitGrid({
+  organizationId,
+  canCreateUnit = true,
+}: Props) {
   const dialogs = useDialogs();
   const notifications = useNotifications();
 
@@ -92,24 +97,27 @@ export default function UnitGrid({ organizationId }: Props) {
     [openDialog],
   );
 
-  const handleCreateClick = React.useCallback(() => openDialog(null), [openDialog]);
+  const handleCreateClick = React.useCallback(() => {
+    if (!canCreateUnit) return;
+    openDialog(null);
+  }, [openDialog, canCreateUnit]);
 
   // A API não possui DELETE de unidade: a remoção bloqueia a unidade.
-  const handleRowDelete = React.useCallback(
+  const handleRowBlock = React.useCallback(
     (unit: Unit) => async () => {
       const reason = await dialogs.prompt(
-        `Informe o motivo para remover (bloquear) a unidade "${unit.unitName}".`,
+        `Informe o motivo para bloquear a unidade "${unit.unitName}".`,
         {
-          title: 'Remover unidade?',
-          okText: 'Remover',
-          cancelText: 'Cancelar',
+          title: "Bloquear unidade?",
+          okText: "Bloquear",
+          cancelText: "Cancelar",
         },
       );
 
       if (reason === null) return;
       if (!reason.trim()) {
-        notifications.show('O motivo é obrigatório para remover a unidade.', {
-          severity: 'warning',
+        notifications.show("O motivo é obrigatório para bloquear a unidade.", {
+          severity: "warning",
           autoHideDuration: 3000,
         });
         return;
@@ -118,16 +126,19 @@ export default function UnitGrid({ organizationId }: Props) {
       setIsLoading(true);
       try {
         await UnitService.block(organizationId, unit.id, reason.trim());
-        notifications.show('Unidade removida (bloqueada) com sucesso.', {
-          severity: 'success',
+        notifications.show("Unidade bloqueada com sucesso.", {
+          severity: "success",
           autoHideDuration: 3000,
         });
         await loadData();
       } catch (deleteError) {
-        notifications.show(`Falha ao remover unidade. ${errorMessage(deleteError)}`, {
-          severity: 'error',
-          autoHideDuration: 5000,
-        });
+        notifications.show(
+          `Falha ao bloquear unidade. ${errorMessage(deleteError)}`,
+          {
+            severity: "error",
+            autoHideDuration: 5000,
+          },
+        );
         setIsLoading(false);
       }
     },
@@ -135,13 +146,13 @@ export default function UnitGrid({ organizationId }: Props) {
   );
 
   const handleSaved = React.useCallback(
-    (mode: 'create' | 'edit') => {
+    (mode: "create" | "edit") => {
       closeDialog();
       notifications.show(
-        mode === 'create'
-          ? 'Unidade cadastrada com sucesso.'
-          : 'Unidade atualizada com sucesso.',
-        { severity: 'success', autoHideDuration: 3000 },
+        mode === "create"
+          ? "Unidade cadastrada com sucesso."
+          : "Unidade atualizada com sucesso.",
+        { severity: "success", autoHideDuration: 3000 },
       );
       loadData();
     },
@@ -150,14 +161,14 @@ export default function UnitGrid({ organizationId }: Props) {
 
   const columns = React.useMemo<GridColDef<Unit>[]>(
     () => [
-      { field: 'unitCode', headerName: 'Código', width: 110 },
-      { field: 'unitName', headerName: 'Nome', flex: 1, minWidth: 180 },
-      { field: 'unitMunicipality', headerName: 'Município', width: 160 },
-      { field: 'unitUF', headerName: 'UF', width: 70 },
-      { field: 'unitTimezone', headerName: 'Fuso horário', width: 170 },
+      { field: "unitCode", headerName: "Código", width: 110 },
+      { field: "unitName", headerName: "Nome", flex: 1, minWidth: 180 },
+      { field: "unitMunicipality", headerName: "Município", width: 160 },
+      { field: "unitUF", headerName: "UF", width: 70 },
+      { field: "unitTimezone", headerName: "Fuso horário", width: 170 },
       {
-        field: 'status',
-        headerName: 'Status',
+        field: "status",
+        headerName: "Status",
         width: 120,
         renderCell: ({ value }) => {
           const config = STATUS_CONFIG[value as UnitStatus];
@@ -166,17 +177,17 @@ export default function UnitGrid({ organizationId }: Props) {
               size="small"
               variant="outlined"
               label={config?.label ?? value}
-              color={config?.color ?? 'default'}
+              color={config?.color ?? "default"}
             />
           );
         },
       },
       {
-        field: 'actions',
-        type: 'actions',
+        field: "actions",
+        type: "actions",
         flex: 1,
         minWidth: 100,
-        align: 'right',
+        align: "right",
         getActions: ({ row }) => [
           <GridActionsCellItem
             key="edit-item"
@@ -185,37 +196,65 @@ export default function UnitGrid({ organizationId }: Props) {
             onClick={handleRowEdit(row)}
           />,
           <GridActionsCellItem
-            key="delete-item"
-            icon={<DeleteIcon />}
+            key="block-item"
+            icon={<BlockIcon />}
             label="Remover"
-            onClick={handleRowDelete(row)}
-            disabled={row.status === 'BLOQUEADA' || row.status === 'INATIVA'}
+            onClick={handleRowBlock(row)}
+            disabled={row.status === "BLOQUEADA" || row.status === "INATIVA"}
           />,
         ],
       },
     ],
-    [handleRowEdit, handleRowDelete],
+    [handleRowEdit, handleRowBlock],
   );
 
   return (
     <Stack spacing={2}>
-      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+      <Stack
+        direction="row"
+        sx={{ alignItems: "center", justifyContent: "space-between" }}
+      >
         <Typography variant="h5">Unidades</Typography>
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <Tooltip title="Recarregar" placement="left" enterDelay={1000}>
             <div>
-              <IconButton size="small" aria-label="recarregar" onClick={handleRefresh}>
+              <IconButton
+                size="small"
+                aria-label="recarregar"
+                onClick={handleRefresh}
+              >
                 <RefreshIcon />
               </IconButton>
             </div>
           </Tooltip>
-          <Button variant="contained" onClick={handleCreateClick} startIcon={<AddIcon />}>
-            Nova unidade
-          </Button>
+          <Tooltip
+            title={
+              canCreateUnit
+                ? ""
+                : "Organização inativa: ative-a para cadastrar unidades."
+            }
+          >
+            <span>
+              <Button
+                variant="contained"
+                onClick={handleCreateClick}
+                startIcon={<AddIcon />}
+                disabled={!canCreateUnit}
+              >
+                Nova unidade
+              </Button>
+            </span>
+          </Tooltip>
         </Stack>
       </Stack>
+      {!canCreateUnit && (
+        <Alert severity="info">
+          Esta organização está inativa e não aceita novas unidades. Para
+          cadastrar, altere o status da organização para Ativa e salve.
+        </Alert>
+      )}
 
-      <Box sx={{ width: '100%' }}>
+      <Box sx={{ width: "100%" }}>
         {error ? (
           <Alert severity="error">{error}</Alert>
         ) : (
@@ -228,20 +267,20 @@ export default function UnitGrid({ organizationId }: Props) {
             disableRowSelectionOnClick
             pageSizeOptions={[5, 10, 25]}
             initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-            localeText={{ noRowsLabel: 'Nenhuma unidade cadastrada.' }}
+            localeText={{ noRowsLabel: "Nenhuma unidade cadastrada." }}
             sx={{
               [`& .${gridClasses.columnHeader}, & .${gridClasses.cell}`]: {
-                outline: 'transparent',
+                outline: "transparent",
               },
               [`& .${gridClasses.columnHeader}:focus-within, & .${gridClasses.cell}:focus-within`]:
-                { outline: 'none' },
+                { outline: "none" },
             }}
             slotProps={{
               loadingOverlay: {
-                variant: 'circular-progress',
-                noRowsVariant: 'circular-progress',
+                variant: "circular-progress",
+                noRowsVariant: "circular-progress",
               },
-              baseIconButton: { size: 'small' },
+              baseIconButton: { size: "small" },
             }}
           />
         )}

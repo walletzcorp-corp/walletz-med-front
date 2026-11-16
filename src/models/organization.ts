@@ -25,6 +25,7 @@ export type CreateOrganizationPayload = Omit<
 
 // PATCH /tenants/:tenantId/organization
 export type UpdateOrganizationPayload = CreateOrganizationPayload & {
+  status?: string;
   rowVersion: number;
 };
 

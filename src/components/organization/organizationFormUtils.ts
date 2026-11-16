@@ -1,8 +1,13 @@
 export const TAX_PROFILE_OPTIONS = [
-  { value: 'SIMPLES_NACIONAL', label: 'Simples Nacional' },
-  { value: 'LUCRO_PRESUMIDO', label: 'Lucro Presumido' },
-  { value: 'LUCRO_REAL', label: 'Lucro Real' },
-  { value: 'MEI', label: 'MEI' },
+  { value: "SIMPLES_NACIONAL", label: "Simples Nacional" },
+  { value: "LUCRO_PRESUMIDO", label: "Lucro Presumido" },
+  { value: "LUCRO_REAL", label: "Lucro Real" },
+  { value: "MEI", label: "MEI" },
+];
+
+export const ORG_STATUS_OPTIONS = [
+  { value: "ACTIVE", label: "Ativa" },
+  { value: "INACTIVE", label: "Inativa" },
 ];
 
 export interface OrganizationFormValues {
@@ -11,28 +16,34 @@ export interface OrganizationFormValues {
   cnpjDigits: string;
   taxProfile: string;
   regionalConfigId: string;
+  status?: string;
 }
 
-export type OrganizationFormErrors = Partial<Record<keyof OrganizationFormValues, string>>;
+export type OrganizationFormErrors = Partial<
+  Record<keyof OrganizationFormValues, string>
+>;
 
 export const EMPTY_ORGANIZATION_FORM: OrganizationFormValues = {
-  legalName: '',
-  tradeName: '',
-  cnpjDigits: '',
-  taxProfile: '',
-  regionalConfigId: '',
+  legalName: "",
+  tradeName: "",
+  cnpjDigits: "",
+  taxProfile: "",
+  regionalConfigId: "",
 };
 
-export function validateOrganization(values: OrganizationFormValues): OrganizationFormErrors {
+export function validateOrganization(
+  values: OrganizationFormValues,
+): OrganizationFormErrors {
   const errors: OrganizationFormErrors = {};
-  if (!values.legalName.trim()) errors.legalName = 'Razão social é obrigatória';
-  if (!values.tradeName.trim()) errors.tradeName = 'Nome fantasia é obrigatório';
+  if (!values.legalName.trim()) errors.legalName = "Razão social é obrigatória";
+  if (!values.tradeName.trim())
+    errors.tradeName = "Nome fantasia é obrigatório";
   if (!/^\d{14}$/.test(values.cnpjDigits)) {
-    errors.cnpjDigits = 'CNPJ deve conter exatamente 14 dígitos';
+    errors.cnpjDigits = "CNPJ deve conter exatamente 14 dígitos";
   }
-  if (!values.taxProfile) errors.taxProfile = 'Perfil tributário é obrigatório';
+  if (!values.taxProfile) errors.taxProfile = "Perfil tributário é obrigatório";
   if (!values.regionalConfigId) {
-    errors.regionalConfigId = 'Configuração regional é obrigatória';
+    errors.regionalConfigId = "Configuração regional é obrigatória";
   }
   return errors;
 }
